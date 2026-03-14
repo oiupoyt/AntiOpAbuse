@@ -12,7 +12,7 @@ No alerts are give to OP, nor can they disable it.
 
 - 📡 **snitchmaxxer** — every console line gets forwarded to Discord in real time
 - 🎨 **Catches creative inventory abuse** — logs every item a creative mode player takes, because "I was just looking" is not an excuse
-- 🤐 **Keeps actual secrets secret** — filters out IPs, DMs, and passwords so no sensitive leaks
+- 🤐 **Keeps actual secrets secret** — filters out IPs, DMs, and passwords so no leaking sensitive stuff
 - ⚡ **Won't kill your server** — runs completely async, the main thread has no idea this is even happening
 - 🛡️ **Completely abuse-proof** — there is no command to turn it off. No permission node. No secret backdoor. The only way to stop it is to physically remove the jar, which, good luck explaining that one
 - 🔁 **discord rate limits? haha no** — it waits, it retries, it doesn't give up
@@ -36,7 +36,7 @@ No alerts are give to OP, nor can they disable it.
 
 ## Setup
 
-1. grab the jar from [Releases](../../releases)
+1. grab the jar from download option
 2. chunk it in `plugins/`
 3. start the server, itll generate the config
 4. open `plugins/AntiOpAbuse/config.yml` and paste your webhook URL
@@ -87,13 +87,13 @@ yep no backdoors or disable options
 
 **Alias:** `/aoa` for when your js lazy
 
-Only OPs can run these. And yes, running them gets logged too. ye.
+Only OPs can run these. And yea, running them gets logged too. 
 
 ---
 
 ## What it won't snitch on
 
-we trynna help members not expose them
+we trynna help players not expose them
 
 - **IP addresses** — nobody needs those in Discord
 - **`/msg`, `/tell`, `/w`, `/whisper`** — private messages stay private
@@ -107,7 +107,7 @@ we trynna help members not expose them
 git clone https://github.com/oiupoyt/AntiOpAbuse.git
 cd AntiOpAbuse
 mvn clean package
-# jar is at target/AntiOpAbuse-1.1.0.jar
+# jar is at target/AntiOpAbuse-1.X.X.jar
 ```
 
 Requires Java 17+ and Maven 3.8+.
