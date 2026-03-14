@@ -1,4 +1,4 @@
-# AntiOpAbuse 🔍
+# AntiOpAbuse ⛔
 
 yo server admins are probably abusing yk so this plugin gives you trust
 
