@@ -12,7 +12,7 @@ No alerts are give to OP, nor can they disable it.
 
 - 📡 **snitchmaxxer** — every console line gets forwarded to Discord in real time
 - 🎨 **Catches creative inventory abuse** — logs every item a creative mode player takes, because "I was just looking" is not an excuse
-- 🤐 **Keeps actual secrets secret** — filters out IPs, DMs, and passwords so you're not leaking sensitive stuff while spying on everyone else
+- 🤐 **Keeps actual secrets secret** — filters out IPs, DMs, and passwords so no sensitive leaks
 - ⚡ **Won't kill your server** — runs completely async, the main thread has no idea this is even happening
 - 🛡️ **Completely abuse-proof** — there is no command to turn it off. No permission node. No secret backdoor. The only way to stop it is to physically remove the jar, which, good luck explaining that one
 - 🔁 **discord rate limits? haha no** — it waits, it retries, it doesn't give up
