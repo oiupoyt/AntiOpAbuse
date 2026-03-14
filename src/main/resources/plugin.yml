@@ -1,0 +1,13 @@
+name: AntiOpAbuse
+version: '1.1.0'
+main: dev.antiopabuse.antiopabuse.AntiOpAbusePlugin
+api-version: '1.13'
+description: Forwards server console output to a Discord webhook in real time.
+authors: [AntiOpAbuse]
+load: STARTUP
+
+commands:
+  antiopabuse:
+    description: AntiOpAbuse management command
+    usage: /antiopabuse <webhook|reload>
+    aliases: [aoa]

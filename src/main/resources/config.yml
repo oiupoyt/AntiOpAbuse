@@ -1,0 +1,10 @@
+# AntiOpAbuse Configuration
+# ─────────────────────────────────────────────────────────────────
+# webhook-url       : Your Discord webhook URL.
+#                     Create one under Server Settings → Integrations → Webhooks.
+# send-as-codeblock : Wrap each log line in a Discord code block for
+#                     monospace / easy reading. Set false for plain text.
+# ─────────────────────────────────────────────────────────────────
+
+webhook-url: "DISCORD_WEBHOOK_HERE"
+send-as-codeblock: true
