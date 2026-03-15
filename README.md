@@ -16,8 +16,8 @@ No alerts are give to OP, nor can they disable it.
 - ⚡ **Won't kill your server** — runs completely async, the main thread has no idea this is even happening
 - 🛡️ **Completely abuse-proof** — there is no command to turn it off. No permission node. No secret backdoor. The only way to stop it is to physically remove the jar, which, good luck explaining that one
 - 🔁 **discord rate limits? haha no** — it waits, it retries, it doesn't give up
-- 🔧 **Two config options** — ye js two. its minimal af. (or i was js not able to find more config options lol)
-
+- 🔧 **Three config options** — ye js two. its minimal af. (or i was js not able to find more config options lol)
+- 🧹 **Commands ONLY option in config** - tired of reading your whole chat and only wanna see the abuse?, this one fixes that (it does not affect creative menu logging)
 ---
 
 ## Works on
@@ -48,10 +48,23 @@ No alerts are give to OP, nor can they disable it.
 ## Config
 
 ```yaml
-# plugins/AntiOpAbuse/config.yml
+# AntiOpAbuse Configuration
+# ─────────────────────────────────────────────────────────────────
+# webhook-url          : Your Discord webhook URL.
+#                        Create one under Server Settings → Integrations → Webhooks.
+# send-as-codeblock    : Wrap each log line in a Discord code block for
+#                        monospace / easy reading. Set false for plain text.
+# commands-only        : When true, only forwards lines where a player or the
+#                        console issued a command. All other log output (join/leave,
+#                        plugin info, server warnings etc.) is ignored.
+#                        /login and /register are always excluded regardless.
+#                         (does not affect creative menu interactions)
+# ─────────────────────────────────────────────────────────────────
 
-webhook-url: "https://discord.com/api/webhooks/YOUR_ID/YOUR_TOKEN"
+webhook-url: "DISCORD_WEBHOOK_HERE"
 send-as-codeblock: true
+commands-only: false
+
 ```
 
 yep no backdoors or disable options
