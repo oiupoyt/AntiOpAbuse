@@ -1,0 +1,15 @@
+# AntiOpAbuse Configuration
+# ─────────────────────────────────────────────────────────────────
+# webhook-url          : Your Discord webhook URL.
+#                        Create one under Server Settings → Integrations → Webhooks.
+# send-as-codeblock    : Wrap each log line in a Discord code block for
+#                        monospace / easy reading. Set false for plain text.
+# commands-only        : When true, only forwards lines where a player or the
+#                        console issued a command. All other log output (join/leave,
+#                        plugin info, server warnings etc.) is ignored.
+#                        /login and /register are always excluded regardless.
+# ─────────────────────────────────────────────────────────────────
+
+webhook-url: "DISCORD_WEBHOOK_HERE"
+send-as-codeblock: true
+commands-only: false
