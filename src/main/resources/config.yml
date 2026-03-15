@@ -8,6 +8,7 @@
 #                        console issued a command. All other log output (join/leave,
 #                        plugin info, server warnings etc.) is ignored.
 #                        /login and /register are always excluded regardless.
+#                         (does not affect creative menu alerts) 
 # ─────────────────────────────────────────────────────────────────
 
 webhook-url: "DISCORD_WEBHOOK_HERE"
