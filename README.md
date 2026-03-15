@@ -18,6 +18,7 @@ No alerts are give to OP, nor can they disable it.
 - 🔁 **discord rate limits? haha no** — it waits, it retries, it doesn't give up
 - 🔧 **Three config options** — ye js two. its minimal af. (or i was js not able to find more config options lol)
 - 🧹 **Commands ONLY option in config** — tired of reading your whole chat and only wanna see the abuse?, this one fixes that (it does not affect creative menu logging)
+
 ---
 
 ## Works on
