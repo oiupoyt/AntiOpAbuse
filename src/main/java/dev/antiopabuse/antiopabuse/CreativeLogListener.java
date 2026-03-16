@@ -35,45 +35,43 @@ public final class CreativeLogListener implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         if (player.getGameMode() != GameMode.CREATIVE) return;
 
-        // Must be clicking INSIDE the creative menu itself — not enderchest,
-        // not player inventory, not any other container
-        if (event.getClickedInventory() == null) return;
+        // The open GUI must be the creative menu — this blocks enderchests,
+        // chests, and any other container a creative player might have open
         if (event.getView().getType() != InventoryType.CREATIVE) return;
-        if (event.getClickedInventory().getType() != InventoryType.CREATIVE) return;
 
-        // Only care about:
-        //   LEFT/RIGHT click  = taking an item from the menu (PICKUP_ALL / PICKUP_HALF)
-        //   MIDDLE click      = clone/duplicate a full stack (CLONE_STACK)
-        // Everything else (putting back, shift-click to hotbar, etc.) is ignored
+        // Only log actual takes and middle-click duplication.
+        // Ignore putting items back, dragging, shift-clicking to hotbar, etc.
         InventoryAction action = event.getAction();
         ClickType       click  = event.getClick();
 
-        boolean isTake = action == InventoryAction.PICKUP_ALL     // left click take
-                      || action == InventoryAction.PICKUP_HALF    // right click take half
-                      || action == InventoryAction.PICKUP_ONE;    // right click take one
+        boolean isTake = action == InventoryAction.PICKUP_ALL
+                      || action == InventoryAction.PICKUP_HALF
+                      || action == InventoryAction.PICKUP_ONE
+                      || action == InventoryAction.PICKUP_SOME;
 
-        boolean isDuplicate = action == InventoryAction.CLONE_STACK  // middle click
+        boolean isDuplicate = action == InventoryAction.CLONE_STACK
                            || click  == ClickType.MIDDLE;
 
         if (!isTake && !isDuplicate) return;
 
-        // Get the item being taken
+        // Get the item — check current slot and cursor
         ItemStack item = event.getCurrentItem();
+        if (item == null || item.getType().isAir()) item = event.getCursor();
         if (item == null || item.getType().isAir()) return;
 
-        // Per-player cooldown to avoid spam
+        // Per-player cooldown
         long now = System.currentTimeMillis();
         UUID uid = player.getUniqueId();
         Long last = cooldowns.get(uid);
         if (last != null && (now - last) < COOLDOWN_MS) return;
         cooldowns.put(uid, now);
 
-        String action_label = isDuplicate ? "duplicated" : "took";
-        String itemName     = formatItemName(item);
-        int    amount       = isDuplicate ? 64 : item.getAmount(); // middle click always gives 64
-        String playerName   = player.getName();
+        String actionLabel = isDuplicate ? "duplicated" : "took";
+        String itemName    = formatItemName(item);
+        int    amount      = isDuplicate ? 64 : item.getAmount();
+        String playerName  = player.getName();
 
-        String line = "[CREATIVE] " + playerName + " " + action_label + " " + amount + "x " + itemName;
+        String line = "[CREATIVE] " + playerName + " " + actionLabel + " " + amount + "x " + itemName;
 
         history.add(line);
         logger.info(line);
