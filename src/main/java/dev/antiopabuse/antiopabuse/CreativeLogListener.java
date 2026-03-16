@@ -31,32 +31,26 @@ public final class CreativeLogListener implements Listener {
     );
 
     private final WebhookDispatcher dispatcher;
+    private final LogHistory        history;
     private final Logger            logger;
     private final Map<UUID, Long>   cooldowns = new HashMap<>();
     private static final long       COOLDOWN_MS = 1_000;
 
-    public CreativeLogListener(WebhookDispatcher dispatcher, Logger logger) {
+    public CreativeLogListener(WebhookDispatcher dispatcher, LogHistory history, Logger logger) {
         this.dispatcher = dispatcher;
+        this.history    = history;
         this.logger     = logger;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
     public void onInventoryClick(InventoryClickEvent event) {
-        // Must be a player
         if (!(event.getWhoClicked() instanceof Player player)) return;
-
-        // Must be in creative mode
         if (player.getGameMode() != GameMode.CREATIVE) return;
 
-        // Get the item — check BOTH current item and cursor item
-        // In creative menus, the item sometimes ends up on the cursor rather than currentItem
         ItemStack item = event.getCurrentItem();
-        if (item == null || item.getType().isAir()) {
-            item = event.getCursor();
-        }
+        if (item == null || item.getType().isAir()) item = event.getCursor();
         if (item == null || item.getType().isAir()) return;
 
-        // Must be a pickup-style action OR any click inside a creative inventory
         boolean isPickupAction = PICKUP_ACTIONS.contains(event.getAction());
         boolean isCreativeInv  = event.getClickedInventory() != null
             && event.getClickedInventory().getType() == InventoryType.CREATIVE;
@@ -64,7 +58,6 @@ public final class CreativeLogListener implements Listener {
 
         if (!isPickupAction && !isCreativeInv && !isCreativeSlot) return;
 
-        // Per-player cooldown
         long now = System.currentTimeMillis();
         UUID uid = player.getUniqueId();
         Long last = cooldowns.get(uid);
@@ -76,7 +69,9 @@ public final class CreativeLogListener implements Listener {
         String playerName = player.getName();
 
         String line = "[CREATIVE] " + playerName + " took " + amount + "x " + itemName;
-        logger.info(line); // this also gets caught by the console relay automatically
+
+        history.add(line);       // always store in history
+        logger.info(line);       // appears in console (and gets caught by RelayAppender too)
         dispatcher.dispatch(line);
     }
 

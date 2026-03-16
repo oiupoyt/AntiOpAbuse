@@ -15,9 +15,14 @@ public final class MessageFilter {
         "(?:[0-9a-fA-F]{1,4}:){2,7}[0-9a-fA-F]{0,4}"
     );
 
-    // Private message commands
+    // Private message commands (player or console)
     private static final Pattern PRIVATE_MSG_CMD = Pattern.compile(
-        "(?i)issued server command: /(?:msg|tell|w|whisper)\\b"
+        "(?i)(?:issued server command:|ran command:)\\s*/(?:msg|tell|w|whisper)\\b"
+    );
+
+    // Team chat command — filter this out
+    private static final Pattern TEAM_CHAT = Pattern.compile(
+        "(?i)(?:issued server command:|ran command:)\\s*/(?:team\\s+chat|tc)\\b"
     );
 
     // Auth plugin names
@@ -25,42 +30,47 @@ public final class MessageFilter {
         "(?i)\\b(?:authme|nlogin|fastlogin|loginprotection|xauth)\\b"
     );
 
-    // Auth commands — always filtered regardless of commands-only mode
+    // Auth commands
     private static final Pattern AUTH_COMMANDS = Pattern.compile(
-        "(?i)issued server command: /(?:register|login|reg|l)\\b"
+        "(?i)(?:issued server command:|ran command:)\\s*/(?:register|login|reg|l)\\b"
     );
 
-    // Detects any line where someone issued a command (player or console)
-    // e.g. "_Kat issued server command: /gamemode creative"
-    //      "Console issued server command: /stop"
-    private static final Pattern IS_COMMAND = Pattern.compile(
+    // Detects a player-issued command
+    // Paper 1.21+: "_Kat issued server command: /gamemode creative"
+    private static final Pattern PLAYER_COMMAND = Pattern.compile(
         "(?i)issued server command:"
+    );
+
+    // Detects a console-run command
+    // Paper 1.21+: "Ran command: /say hello" or "[Rcon] Ran command /stop"
+    private static final Pattern CONSOLE_COMMAND = Pattern.compile(
+        "(?i)(?:ran command:|\\[rcon\\])"
+    );
+
+    // Detects either type of command for commands-only mode
+    private static final Pattern IS_ANY_COMMAND = Pattern.compile(
+        "(?i)(?:issued server command:|ran command:|\\[rcon\\])"
     );
 
     private MessageFilter() {}
 
-    /**
-     * @param line         the raw console line
-     * @param commandsOnly if true, only command lines are forwarded
-     * @return true if the line is safe and should be forwarded
-     */
     public static boolean isAllowed(String line, boolean commandsOnly) {
         if (line == null || line.isBlank()) return false;
 
-        // Always block these regardless of mode
+        // Always block these
         if (IPV4.matcher(line).find())            return false;
         if (IPV6.matcher(line).find())            return false;
         if (PRIVATE_MSG_CMD.matcher(line).find()) return false;
+        if (TEAM_CHAT.matcher(line).find())       return false;
         if (AUTH_PLUGIN.matcher(line).find())     return false;
         if (AUTH_COMMANDS.matcher(line).find())   return false;
 
         // In commands-only mode, drop anything that isn't a command
-        if (commandsOnly && !IS_COMMAND.matcher(line).find()) return false;
+        if (commandsOnly && !IS_ANY_COMMAND.matcher(line).find()) return false;
 
         return true;
     }
 
-    /** Backwards-compatible overload — defaults to commandsOnly = false. */
     public static boolean isAllowed(String line) {
         return isAllowed(line, false);
     }

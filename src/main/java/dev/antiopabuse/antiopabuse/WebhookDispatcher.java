@@ -61,6 +61,12 @@ public final class WebhookDispatcher {
         executor.submit(() -> sendNow(rawLine, false));
     }
 
+    /** Blocking send — use only during shutdown when the async queue has no time to flush. */
+    public void dispatchNow(String rawLine) {
+        if (!isConfigured()) return;
+        sendNow(rawLine, true);
+    }
+
     public String testWebhook() {
         if (!isConfigured()) {
             return "§cWebhook URL is not configured! Edit plugins/AntiOpAbuse/config.yml";

@@ -10,20 +10,29 @@ import org.apache.logging.log4j.core.config.Property;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 public final class RelayAppender extends AbstractAppender {
 
     private static final String APPENDER_NAME = "AntiOpAbuseDiscordAppender";
 
+    // Only store lines that are commands or creative interactions in history
+    private static final Pattern IS_LOGGABLE = Pattern.compile(
+        "(?i)(?:issued server command:|ran command:|\\[rcon\\]|\\[CREATIVE\\])"
+    );
+
     private final WebhookDispatcher dispatcher;
+    private final LogHistory        history;
     private final Logger            javaLogger;
     private volatile boolean        commandsOnly;
 
-    public RelayAppender(WebhookDispatcher dispatcher, Logger javaLogger, boolean commandsOnly) {
+    public RelayAppender(WebhookDispatcher dispatcher, LogHistory history,
+                         Logger javaLogger, boolean commandsOnly) {
         super(APPENDER_NAME, null,
               PatternLayout.newBuilder().withPattern("%msg%n").build(),
               true, Property.EMPTY_ARRAY);
         this.dispatcher   = dispatcher;
+        this.history      = history;
         this.javaLogger   = javaLogger;
         this.commandsOnly = commandsOnly;
     }
@@ -40,11 +49,17 @@ public final class RelayAppender extends AbstractAppender {
 
             if (message == null || message.isBlank()) return;
 
-            // Strip Minecraft colour codes
             message = message.replaceAll("§[0-9a-fk-orA-FK-OR]", "");
 
             String line = "[" + level + "]: " + message;
 
+            // Always store commands/creative lines in history regardless of mode
+            if (IS_LOGGABLE.matcher(line).find()
+                    && MessageFilter.isAllowed(line, false)) {
+                history.add(line);
+            }
+
+            // Forward to Discord based on current mode
             if (MessageFilter.isAllowed(line, commandsOnly)) {
                 dispatcher.dispatch(line);
             }
