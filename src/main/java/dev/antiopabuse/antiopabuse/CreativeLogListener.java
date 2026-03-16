@@ -5,30 +5,18 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
 public final class CreativeLogListener implements Listener {
-
-    private static final Set<InventoryAction> PICKUP_ACTIONS = EnumSet.of(
-        InventoryAction.PICKUP_ALL,
-        InventoryAction.PICKUP_HALF,
-        InventoryAction.PICKUP_ONE,
-        InventoryAction.PICKUP_SOME,
-        InventoryAction.CLONE_STACK,
-        InventoryAction.HOTBAR_SWAP,
-        InventoryAction.HOTBAR_MOVE_AND_READD,
-        InventoryAction.MOVE_TO_OTHER_INVENTORY
-    );
 
     private final WebhookDispatcher dispatcher;
     private final LogHistory        history;
@@ -47,31 +35,48 @@ public final class CreativeLogListener implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         if (player.getGameMode() != GameMode.CREATIVE) return;
 
+        // Must be clicking INSIDE the creative menu itself — not enderchest,
+        // not player inventory, not any other container
+        if (event.getClickedInventory() == null) return;
+        if (event.getView().getType() != InventoryType.CREATIVE) return;
+        if (event.getClickedInventory().getType() != InventoryType.CREATIVE) return;
+
+        // Only care about:
+        //   LEFT/RIGHT click  = taking an item from the menu (PICKUP_ALL / PICKUP_HALF)
+        //   MIDDLE click      = clone/duplicate a full stack (CLONE_STACK)
+        // Everything else (putting back, shift-click to hotbar, etc.) is ignored
+        InventoryAction action = event.getAction();
+        ClickType       click  = event.getClick();
+
+        boolean isTake = action == InventoryAction.PICKUP_ALL     // left click take
+                      || action == InventoryAction.PICKUP_HALF    // right click take half
+                      || action == InventoryAction.PICKUP_ONE;    // right click take one
+
+        boolean isDuplicate = action == InventoryAction.CLONE_STACK  // middle click
+                           || click  == ClickType.MIDDLE;
+
+        if (!isTake && !isDuplicate) return;
+
+        // Get the item being taken
         ItemStack item = event.getCurrentItem();
-        if (item == null || item.getType().isAir()) item = event.getCursor();
         if (item == null || item.getType().isAir()) return;
 
-        boolean isPickupAction = PICKUP_ACTIONS.contains(event.getAction());
-        boolean isCreativeInv  = event.getClickedInventory() != null
-            && event.getClickedInventory().getType() == InventoryType.CREATIVE;
-        boolean isCreativeSlot = event.getView().getType() == InventoryType.CREATIVE;
-
-        if (!isPickupAction && !isCreativeInv && !isCreativeSlot) return;
-
+        // Per-player cooldown to avoid spam
         long now = System.currentTimeMillis();
         UUID uid = player.getUniqueId();
         Long last = cooldowns.get(uid);
         if (last != null && (now - last) < COOLDOWN_MS) return;
         cooldowns.put(uid, now);
 
-        String itemName   = formatItemName(item);
-        int    amount     = item.getAmount();
-        String playerName = player.getName();
+        String action_label = isDuplicate ? "duplicated" : "took";
+        String itemName     = formatItemName(item);
+        int    amount       = isDuplicate ? 64 : item.getAmount(); // middle click always gives 64
+        String playerName   = player.getName();
 
-        String line = "[CREATIVE] " + playerName + " took " + amount + "x " + itemName;
+        String line = "[CREATIVE] " + playerName + " " + action_label + " " + amount + "x " + itemName;
 
-        history.add(line);       // always store in history
-        logger.info(line);       // appears in console (and gets caught by RelayAppender too)
+        history.add(line);
+        logger.info(line);
         dispatcher.dispatch(line);
     }
 
