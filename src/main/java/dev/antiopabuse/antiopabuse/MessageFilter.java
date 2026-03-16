@@ -17,12 +17,12 @@ public final class MessageFilter {
 
     // Private message commands
     private static final Pattern PRIVATE_MSG_CMD = Pattern.compile(
-        "(?i)/(?:msg|tell|w|whisper)\\s"
+        "(?i)(?:issued server command:|ran command:)\\s*/(?:msg|tell|w|whisper)\\b"
     );
 
-    // Team chat
+    // Team chat — always filtered
     private static final Pattern TEAM_CHAT = Pattern.compile(
-        "(?i)/team\\s+chat\\b"
+        "(?i)(?:issued server command:|ran command:)\\s*/(?:teammsg|tm|team\\s+msg)\\b"
     );
 
     // Auth plugin names
@@ -32,15 +32,14 @@ public final class MessageFilter {
 
     // Auth commands
     private static final Pattern AUTH_COMMANDS = Pattern.compile(
-        "(?i)/(?:register|login)\\b"
+        "(?i)(?:issued server command:|ran command:)\\s*/(?:register|login|reg)\\b"
     );
 
-    // Any command line — player or console
-    // Paper: "Steve issued server command: /gamemode creative"
-    // Paper: "Ran command: /stop"  (console)
-    // Paper: "[Rcon] ..."
+    // Any command line — player OR console
+    // Player:  "_Kat issued server command: /gamemode creative"
+    // Console: "Ran command: /stop"  or  "[Rcon] ..."
     private static final Pattern IS_ANY_COMMAND = Pattern.compile(
-        "(?i)(?:issued server command:|ran command:|\\[rcon\\]|\\[CREATIVE\\])"
+        "(?i)(?:issued server command:|ran command:|\\[rcon\\])"
     );
 
     private MessageFilter() {}

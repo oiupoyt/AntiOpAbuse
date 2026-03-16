@@ -5,6 +5,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
@@ -33,26 +35,28 @@ public final class CreativeLogListener implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         if (player.getGameMode() != GameMode.CREATIVE) return;
 
-        // Must be the creative menu view — blocks enderchests, chests, etc.
+        // From the debug output we know exactly what creative menu clicks look like:
+        // view=CREATIVE, clicked=PLAYER, action=PLACE_ALL, click=CREATIVE
+        // This combination is ONLY possible when taking from the creative item list.
         if (event.getView().getType() != InventoryType.CREATIVE) return;
+        if (event.getClick() != ClickType.CREATIVE) return;
+        if (event.getAction() != InventoryAction.PLACE_ALL) return;
 
-        // Must have an item in the clicked slot
         ItemStack item = event.getCurrentItem();
         if (item == null || item.getType().isAir()) return;
 
-        // Per-player cooldown to avoid spam
+        // per-player cooldown
         long now = System.currentTimeMillis();
         UUID uid = player.getUniqueId();
         Long last = cooldowns.get(uid);
         if (last != null && (now - last) < COOLDOWN_MS) return;
         cooldowns.put(uid, now);
 
-        String itemName   = formatItemName(item);
-        String playerName = player.getName();
-        String line = "[CREATIVE] " + playerName + " took " + item.getAmount() + "x " + itemName;
+        String itemName = formatItemName(item);
+        int    amount   = item.getAmount();
+        String line     = "[CREATIVE] " + player.getName() + " took " + amount + "x " + itemName;
 
         history.add(line);
-        logger.info(line);
         dispatcher.dispatch(line);
     }
 

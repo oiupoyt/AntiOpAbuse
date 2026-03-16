@@ -76,10 +76,10 @@ public final class AntiOpAbusePlugin extends JavaPlugin implements CommandExecut
     public boolean onCommand(CommandSender sender, Command command,
                              String label, String[] args) {
 
-        // ── /antiopabuse logs — all players ───────────────────────────────
-        if (args.length > 0 && args[0].equalsIgnoreCase("logs")
-                || command.getName().equalsIgnoreCase("abalogs")) {
+        if (!command.getName().equalsIgnoreCase("antiopabuse")) return false;
 
+        // /antiopabuse logs — open to ALL players, no OP required
+        if (args.length > 0 && args[0].equalsIgnoreCase("logs")) {
             List<LogHistory.Entry> entries = history.snapshot();
 
             sender.sendMessage(ChatColor.GOLD + "━━━━━━━━━━ "
@@ -97,7 +97,7 @@ public final class AntiOpAbusePlugin extends JavaPlugin implements CommandExecut
                 ChatColor color;
                 if (line.contains("[CREATIVE]")) {
                     color = ChatColor.AQUA;
-                } else if (line.toLowerCase().contains("/op ")
+                } else if (line.toLowerCase().contains("/op")
                         || line.toLowerCase().contains("/deop")) {
                     color = ChatColor.RED;
                 } else {
@@ -113,15 +113,15 @@ public final class AntiOpAbusePlugin extends JavaPlugin implements CommandExecut
             return true;
         }
 
-        // ── /antiopabuse — OP only ─────────────────────────────────────────
+        // All other subcommands — OP only
         if (!sender.isOp()) {
             sender.sendMessage(ChatColor.RED + "You must be an operator to use this command.");
             return true;
         }
 
         if (args.length == 0) {
-            sender.sendMessage(ChatColor.GOLD + "AntiOpAbuse " + ChatColor.GRAY
-                + "v" + getDescription().getVersion());
+            sender.sendMessage(ChatColor.GOLD + "AntiOpAbuse "
+                + ChatColor.GRAY + "v" + getDescription().getVersion());
             sender.sendMessage(ChatColor.GRAY + "Usage: " + ChatColor.WHITE
                 + "/antiopabuse logs    " + ChatColor.GRAY + "- view last 50 logs (all players)");
             sender.sendMessage(ChatColor.GRAY + "Usage: " + ChatColor.WHITE
