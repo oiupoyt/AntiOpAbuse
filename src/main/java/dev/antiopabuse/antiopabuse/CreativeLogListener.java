@@ -5,8 +5,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
@@ -35,43 +33,23 @@ public final class CreativeLogListener implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         if (player.getGameMode() != GameMode.CREATIVE) return;
 
-        // The open GUI must be the creative menu — this blocks enderchests,
-        // chests, and any other container a creative player might have open
+        // Must be the creative menu view — blocks enderchests, chests, etc.
         if (event.getView().getType() != InventoryType.CREATIVE) return;
 
-        // Only log actual takes and middle-click duplication.
-        // Ignore putting items back, dragging, shift-clicking to hotbar, etc.
-        InventoryAction action = event.getAction();
-        ClickType       click  = event.getClick();
-
-        boolean isTake = action == InventoryAction.PICKUP_ALL
-                      || action == InventoryAction.PICKUP_HALF
-                      || action == InventoryAction.PICKUP_ONE
-                      || action == InventoryAction.PICKUP_SOME;
-
-        boolean isDuplicate = action == InventoryAction.CLONE_STACK
-                           || click  == ClickType.MIDDLE;
-
-        if (!isTake && !isDuplicate) return;
-
-        // Get the item — check current slot and cursor
+        // Must have an item in the clicked slot
         ItemStack item = event.getCurrentItem();
-        if (item == null || item.getType().isAir()) item = event.getCursor();
         if (item == null || item.getType().isAir()) return;
 
-        // Per-player cooldown
+        // Per-player cooldown to avoid spam
         long now = System.currentTimeMillis();
         UUID uid = player.getUniqueId();
         Long last = cooldowns.get(uid);
         if (last != null && (now - last) < COOLDOWN_MS) return;
         cooldowns.put(uid, now);
 
-        String actionLabel = isDuplicate ? "duplicated" : "took";
-        String itemName    = formatItemName(item);
-        int    amount      = isDuplicate ? 64 : item.getAmount();
-        String playerName  = player.getName();
-
-        String line = "[CREATIVE] " + playerName + " " + actionLabel + " " + amount + "x " + itemName;
+        String itemName   = formatItemName(item);
+        String playerName = player.getName();
+        String line = "[CREATIVE] " + playerName + " took " + item.getAmount() + "x " + itemName;
 
         history.add(line);
         logger.info(line);

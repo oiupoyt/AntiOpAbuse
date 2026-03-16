@@ -47,17 +47,16 @@ public final class AntiOpAbusePlugin extends JavaPlugin implements CommandExecut
         );
 
         getCommand("antiopabuse").setExecutor(this);
-        getCommand("abalogs").setExecutor(this);
 
         getLogger().info("AntiOpAbuse v" + getDescription().getVersion()
             + " enabled — forwarding console to Discord."
             + (commandsOnly ? " [commands-only mode]" : ""));
 
+        // Server started notification
         if (dispatcher.isConfigured()) {
             new BukkitRunnable() {
                 @Override public void run() {
-                    String version = getServer().getVersion();
-                    dispatcher.dispatch("🟢 Server started — " + version);
+                    dispatcher.dispatch("🟢 Server started — " + getServer().getVersion());
                 }
             }.runTaskLater(this, 60L);
         }
@@ -77,13 +76,15 @@ public final class AntiOpAbusePlugin extends JavaPlugin implements CommandExecut
     public boolean onCommand(CommandSender sender, Command command,
                              String label, String[] args) {
 
-        // ── /abalogs — available to all players ───────────────────────────
-        if (command.getName().equalsIgnoreCase("abalogs")) {
+        // ── /antiopabuse logs — all players ───────────────────────────────
+        if (args.length > 0 && args[0].equalsIgnoreCase("logs")
+                || command.getName().equalsIgnoreCase("abalogs")) {
+
             List<LogHistory.Entry> entries = history.snapshot();
 
-            sender.sendMessage(ChatColor.GOLD + "━━━━━━━━━━ " +
-                ChatColor.YELLOW + "AntiOpAbuse Logs" +
-                ChatColor.GOLD + " ━━━━━━━━━━");
+            sender.sendMessage(ChatColor.GOLD + "━━━━━━━━━━ "
+                + ChatColor.YELLOW + "AntiOpAbuse Logs"
+                + ChatColor.GOLD + " ━━━━━━━━━━");
 
             if (entries.isEmpty()) {
                 sender.sendMessage(ChatColor.GRAY + "No logs yet — nothing suspicious has happened.");
@@ -92,18 +93,16 @@ public final class AntiOpAbusePlugin extends JavaPlugin implements CommandExecut
             }
 
             for (LogHistory.Entry entry : entries) {
-                // Colour-code by type
                 String line = entry.line();
                 ChatColor color;
                 if (line.contains("[CREATIVE]")) {
-                    color = ChatColor.AQUA;        // creative grabs = aqua
-                } else if (line.toLowerCase().contains("/op")
+                    color = ChatColor.AQUA;
+                } else if (line.toLowerCase().contains("/op ")
                         || line.toLowerCase().contains("/deop")) {
-                    color = ChatColor.RED;          // op/deop = red, high priority
+                    color = ChatColor.RED;
                 } else {
-                    color = ChatColor.WHITE;        // everything else = white
+                    color = ChatColor.WHITE;
                 }
-
                 sender.sendMessage(ChatColor.DARK_GRAY + "[" + entry.timestamp() + "] "
                     + color + line);
             }
@@ -123,6 +122,8 @@ public final class AntiOpAbusePlugin extends JavaPlugin implements CommandExecut
         if (args.length == 0) {
             sender.sendMessage(ChatColor.GOLD + "AntiOpAbuse " + ChatColor.GRAY
                 + "v" + getDescription().getVersion());
+            sender.sendMessage(ChatColor.GRAY + "Usage: " + ChatColor.WHITE
+                + "/antiopabuse logs    " + ChatColor.GRAY + "- view last 50 logs (all players)");
             sender.sendMessage(ChatColor.GRAY + "Usage: " + ChatColor.WHITE
                 + "/antiopabuse webhook " + ChatColor.GRAY + "- test the Discord webhook");
             sender.sendMessage(ChatColor.GRAY + "Usage: " + ChatColor.WHITE
@@ -159,7 +160,7 @@ public final class AntiOpAbusePlugin extends JavaPlugin implements CommandExecut
             }
 
             default -> sender.sendMessage(ChatColor.RED
-                + "Unknown sub-command. Use: webhook | reload");
+                + "Unknown sub-command. Use: logs | webhook | reload");
         }
 
         return true;

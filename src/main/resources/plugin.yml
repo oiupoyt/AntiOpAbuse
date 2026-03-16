@@ -8,9 +8,6 @@ load: STARTUP
 
 commands:
   antiopabuse:
-    description: AntiOpAbuse management command (OP only)
-    usage: /antiopabuse <webhook|reload>
+    description: AntiOpAbuse management command
+    usage: /antiopabuse <logs|webhook|reload>
     aliases: [aoa]
-  abalogs:
-    description: View the last 50 commands and creative interactions
-    usage: /abalogs
