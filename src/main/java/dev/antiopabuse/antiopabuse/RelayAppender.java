@@ -10,16 +10,10 @@ import org.apache.logging.log4j.core.config.Property;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 public final class RelayAppender extends AbstractAppender {
 
     private static final String APPENDER_NAME = "AntiOpAbuseDiscordAppender";
-
-    // Only store lines that are commands or creative interactions in history
-    private static final Pattern IS_LOGGABLE = Pattern.compile(
-        "(?i)(?:issued server command:|ran command:|\\[rcon\\]|\\[CREATIVE\\])"
-    );
 
     private final WebhookDispatcher dispatcher;
     private final LogHistory        history;
@@ -53,13 +47,12 @@ public final class RelayAppender extends AbstractAppender {
 
             String line = "[" + level + "]: " + message;
 
-            // Always store commands/creative lines in history regardless of mode
-            if (IS_LOGGABLE.matcher(line).find()
+            // store commands and creative lines in history
+            if (MessageFilter.IS_LOGGABLE.matcher(line).find()
                     && MessageFilter.isAllowed(line, false)) {
                 history.add(line);
             }
 
-            // Forward to Discord based on current mode
             if (MessageFilter.isAllowed(line, commandsOnly)) {
                 dispatcher.dispatch(line);
             }

@@ -43,7 +43,7 @@ public final class AntiOpAbusePlugin extends JavaPlugin implements CommandExecut
         appender.install();
 
         getServer().getPluginManager().registerEvents(
-            new CreativeLogListener(dispatcher, history, getLogger()), this
+            new CreativeLogListener(dispatcher, getLogger()), this
         );
 
         getCommand("antiopabuse").setExecutor(this);
@@ -78,7 +78,7 @@ public final class AntiOpAbusePlugin extends JavaPlugin implements CommandExecut
 
         if (!command.getName().equalsIgnoreCase("antiopabuse")) return false;
 
-        // /antiopabuse logs — open to ALL players, no OP required
+        // /antiopabuse logs — available to ALL players
         if (args.length > 0 && args[0].equalsIgnoreCase("logs")) {
             List<LogHistory.Entry> entries = history.snapshot();
 
@@ -97,7 +97,7 @@ public final class AntiOpAbusePlugin extends JavaPlugin implements CommandExecut
                 ChatColor color;
                 if (line.contains("[CREATIVE]")) {
                     color = ChatColor.AQUA;
-                } else if (line.toLowerCase().contains("/op")
+                } else if (line.toLowerCase().contains("/op ")
                         || line.toLowerCase().contains("/deop")) {
                     color = ChatColor.RED;
                 } else {
@@ -113,7 +113,7 @@ public final class AntiOpAbusePlugin extends JavaPlugin implements CommandExecut
             return true;
         }
 
-        // All other subcommands — OP only
+        // all other subcommands — OP only
         if (!sender.isOp()) {
             sender.sendMessage(ChatColor.RED + "You must be an operator to use this command.");
             return true;

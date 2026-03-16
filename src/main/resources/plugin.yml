@@ -8,6 +8,6 @@ load: STARTUP
 
 commands:
   antiopabuse:
-    description: AntiOpAbuse command
+    description: AntiOpAbuse management command
     usage: /antiopabuse <logs|webhook|reload>
     aliases: [aoa]

@@ -5,58 +5,78 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
 public final class CreativeLogListener implements Listener {
 
+    private static final Set<InventoryAction> PICKUP_ACTIONS = EnumSet.of(
+        InventoryAction.PICKUP_ALL,
+        InventoryAction.PICKUP_HALF,
+        InventoryAction.PICKUP_ONE,
+        InventoryAction.PICKUP_SOME,
+        InventoryAction.CLONE_STACK,
+        InventoryAction.HOTBAR_SWAP,
+        InventoryAction.HOTBAR_MOVE_AND_READD,
+        InventoryAction.MOVE_TO_OTHER_INVENTORY
+    );
+
     private final WebhookDispatcher dispatcher;
-    private final LogHistory        history;
     private final Logger            logger;
     private final Map<UUID, Long>   cooldowns = new HashMap<>();
     private static final long       COOLDOWN_MS = 1_000;
 
-    public CreativeLogListener(WebhookDispatcher dispatcher, LogHistory history, Logger logger) {
+    public CreativeLogListener(WebhookDispatcher dispatcher, Logger logger) {
         this.dispatcher = dispatcher;
-        this.history    = history;
         this.logger     = logger;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
     public void onInventoryClick(InventoryClickEvent event) {
+        // Must be a player
         if (!(event.getWhoClicked() instanceof Player player)) return;
+
+        // Must be in creative mode
         if (player.getGameMode() != GameMode.CREATIVE) return;
 
-        // From the debug output we know exactly what creative menu clicks look like:
-        // view=CREATIVE, clicked=PLAYER, action=PLACE_ALL, click=CREATIVE
-        // This combination is ONLY possible when taking from the creative item list.
-        if (event.getView().getType() != InventoryType.CREATIVE) return;
-        if (event.getClick() != ClickType.CREATIVE) return;
-        if (event.getAction() != InventoryAction.PLACE_ALL) return;
-
+        // Get the item — check BOTH current item and cursor item
+        // In creative menus, the item sometimes ends up on the cursor rather than currentItem
         ItemStack item = event.getCurrentItem();
+        if (item == null || item.getType().isAir()) {
+            item = event.getCursor();
+        }
         if (item == null || item.getType().isAir()) return;
 
-        // per-player cooldown
+        // Must be a pickup-style action OR any click inside a creative inventory
+        boolean isPickupAction = PICKUP_ACTIONS.contains(event.getAction());
+        boolean isCreativeInv  = event.getClickedInventory() != null
+            && event.getClickedInventory().getType() == InventoryType.CREATIVE;
+        boolean isCreativeSlot = event.getView().getType() == InventoryType.CREATIVE;
+
+        if (!isPickupAction && !isCreativeInv && !isCreativeSlot) return;
+
+        // Per-player cooldown
         long now = System.currentTimeMillis();
         UUID uid = player.getUniqueId();
         Long last = cooldowns.get(uid);
         if (last != null && (now - last) < COOLDOWN_MS) return;
         cooldowns.put(uid, now);
 
-        String itemName = formatItemName(item);
-        int    amount   = item.getAmount();
-        String line     = "[CREATIVE] " + player.getName() + " took " + amount + "x " + itemName;
+        String itemName   = formatItemName(item);
+        int    amount     = item.getAmount();
+        String playerName = player.getName();
 
-        history.add(line);
+        String line = "[CREATIVE] " + playerName + " took " + amount + "x " + itemName;
+        logger.info(line); // this also gets caught by the console relay automatically
         dispatcher.dispatch(line);
     }
 

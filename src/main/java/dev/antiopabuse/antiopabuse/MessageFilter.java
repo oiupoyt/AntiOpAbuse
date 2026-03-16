@@ -17,12 +17,12 @@ public final class MessageFilter {
 
     // Private message commands
     private static final Pattern PRIVATE_MSG_CMD = Pattern.compile(
-        "(?i)(?:issued server command:|ran command:)\\s*/(?:msg|tell|w|whisper)\\b"
+        "(?i)issued server command: /(?:msg|tell|w|whisper)\\b"
     );
 
-    // Team chat — always filtered
+    // Team chat — filtered
     private static final Pattern TEAM_CHAT = Pattern.compile(
-        "(?i)(?:issued server command:|ran command:)\\s*/(?:teammsg|tm|team\\s+msg)\\b"
+        "(?i)issued server command: /(?:teammsg|tm|team\\s+chat|team\\s+msg)\\b"
     );
 
     // Auth plugin names
@@ -32,14 +32,17 @@ public final class MessageFilter {
 
     // Auth commands
     private static final Pattern AUTH_COMMANDS = Pattern.compile(
-        "(?i)(?:issued server command:|ran command:)\\s*/(?:register|login|reg)\\b"
+        "(?i)issued server command: /(?:register|login|reg|l)\\b"
     );
 
-    // Any command line — player OR console
-    // Player:  "_Kat issued server command: /gamemode creative"
-    // Console: "Ran command: /stop"  or  "[Rcon] ..."
-    private static final Pattern IS_ANY_COMMAND = Pattern.compile(
-        "(?i)(?:issued server command:|ran command:|\\[rcon\\])"
+    // Player command detection — same as original working version
+    private static final Pattern IS_COMMAND = Pattern.compile(
+        "(?i)issued server command:"
+    );
+
+    // Lines to store in history
+    public static final Pattern IS_LOGGABLE = Pattern.compile(
+        "(?i)(?:issued server command:|\\[CREATIVE\\])"
     );
 
     private MessageFilter() {}
@@ -54,7 +57,12 @@ public final class MessageFilter {
         if (AUTH_PLUGIN.matcher(line).find())     return false;
         if (AUTH_COMMANDS.matcher(line).find())   return false;
 
-        if (commandsOnly && !IS_ANY_COMMAND.matcher(line).find()) return false;
+        // commands-only: [CREATIVE] lines always pass, everything else must be a command
+        if (commandsOnly
+                && !IS_COMMAND.matcher(line).find()
+                && !line.contains("[CREATIVE]")) {
+            return false;
+        }
 
         return true;
     }
