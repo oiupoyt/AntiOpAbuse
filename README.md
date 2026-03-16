@@ -2,9 +2,9 @@
 
 yo server admins are probably abusing yk so this plugin gives you trust
 
-AntiOpAbuse watches the server console 24/7 and rats out everything to a Discord webhook in real time. *Every* command, ANY item taken from creative inventory. but with safeguards; no join IPs shown, no auth messages shown, no /msg shown
+AntiOpAbuse watches the server console 24/7 and rats out everything to a Discord webhook in real time. *Every* command, ANY item taken from creative inventory. but with safeguards; no join IPs shown, no auth messages shown, no /msg, /team chat shown
 
-No alerts are give to OP, nor can they disable it.
+No alerts are give to OP, nor can they disable it. catches consoles offguard too.
 
 ---
 
