@@ -98,7 +98,7 @@ yep no backdoors or disable options
 |---------|-------------|
 | `/antiopabuse webhook` | Pings Discord and tells you if it's working |
 | `/antiopabuse reload` | Reloads the config so you don't have to restart |
-
+| `/antiopabuse logs`  | displays last 50 logs
 **Alias:** `/aoa` for when your js lazy
 
 Only OPs can run these. And yea, running them gets logged too. 
