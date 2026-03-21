@@ -2,9 +2,9 @@
 
 yo server admins are probably abusing yk so this plugin gives you trust
 
-AntiOpAbuse watches the server console 24/7 and rats out everything to a Discord webhook in real time. *Every* command, ANY item taken from creative inventory. but with safeguards; no join IPs shown, no auth messages shown, no /msg shown
+AntiOpAbuse watches the server console 24/7 and rats out everything to a Discord webhook in real time. *Every* command, ANY item taken from creative inventory. but with safeguards; no join IPs shown, no auth messages shown, no /msg, /team chat shown
 
-No alerts are give to OP, nor can they disable it.
+No alerts are give to OP, nor can they disable it. catches consoles offguard too.
 
 ---
 
@@ -16,7 +16,8 @@ No alerts are give to OP, nor can they disable it.
 - ⚡ **Won't kill your server** — runs completely async, the main thread has no idea this is even happening
 - 🛡️ **Completely abuse-proof** — there is no command to turn it off. No permission node. No secret backdoor. The only way to stop it is to physically remove the jar, which, good luck explaining that one
 - 🔁 **discord rate limits? haha no** — it waits, it retries, it doesn't give up
-- 🔧 **Two config options** — ye js two. its minimal af. (or i was js not able to find more config options lol)
+- 🔧 **Three config options** — ye js two. its minimal af. (or i was js not able to find more config options lol)
+- 🧹 **Commands ONLY option in config** — tired of reading your whole chat and only wanna see the abuse?, this one fixes that (it does not affect creative menu logging)
 
 ---
 
@@ -48,10 +49,23 @@ No alerts are give to OP, nor can they disable it.
 ## Config
 
 ```yaml
-# plugins/AntiOpAbuse/config.yml
+# AntiOpAbuse Configuration
+# ─────────────────────────────────────────────────────────────────
+# webhook-url          : Your Discord webhook URL.
+#                        Create one under Server Settings → Integrations → Webhooks.
+# send-as-codeblock    : Wrap each log line in a Discord code block for
+#                        monospace / easy reading. Set false for plain text.
+# commands-only        : When true, filters out noisy lines like player chat,
+#                     join/leave messages, server lag warnings, and plugin spam.
+#                     Commands, console output, warnings, errors, and creative
+#                     logs still come through. IPs, private messages, and auth
+#                     plugin output are always filtered regardless.
+# ─────────────────────────────────────────────────────────────────
 
-webhook-url: "https://discord.com/api/webhooks/YOUR_ID/YOUR_TOKEN"
+webhook-url: "DISCORD_WEBHOOK_HERE"
 send-as-codeblock: true
+commands-only: false
+
 ```
 
 yep no backdoors or disable options
@@ -84,7 +98,7 @@ yep no backdoors or disable options
 |---------|-------------|
 | `/antiopabuse webhook` | Pings Discord and tells you if it's working |
 | `/antiopabuse reload` | Reloads the config so you don't have to restart |
-
+| `/antiopabuse logs`  | displays last 50 logs (can be run by all players) |
 **Alias:** `/aoa` for when your js lazy
 
 Only OPs can run these. And yea, running them gets logged too. 
