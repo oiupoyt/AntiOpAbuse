@@ -20,7 +20,7 @@ public final class MessageFilter {
         "(?i)issued server command: /(?:msg|tell|w|whisper)\\b"
     );
 
-    // Team chat — filtered
+    // Team chat
     private static final Pattern TEAM_CHAT = Pattern.compile(
         "(?i)issued server command: /(?:teammsg|tm|team\\s+chat|team\\s+msg)\\b"
     );
@@ -35,12 +35,31 @@ public final class MessageFilter {
         "(?i)issued server command: /(?:register|login|reg|l)\\b"
     );
 
-    // Player command detection — same as original working version
-    private static final Pattern IS_COMMAND = Pattern.compile(
-        "(?i)issued server command:"
+    // ── Noise filter patterns (used when commands-only is true) ──────────
+
+    // Player chat — <username> always appears in chat lines regardless of
+    // secure/not-secure mode, server software, or chat plugins
+    private static final Pattern PLAYER_CHAT = Pattern.compile(
+        "<[^>]+>"
     );
 
-    // Lines to store in history
+    // Join/leave/death messages
+    private static final Pattern JOIN_LEAVE = Pattern.compile(
+        "(?i)(?:joined the game|left the game|lost connection:|has just earned|made the advancement|reached the goal|Challenge complete)"
+    );
+
+    // Generic plugin info/debug spam (lines starting with plugin brackets that aren't CREATIVE)
+    // e.g. [SomePlugin] doing internal stuff
+    // We allow [AntiOpAbuse] and [CREATIVE] through
+    private static final Pattern PLUGIN_SPAM = Pattern.compile(
+        "^\\[\\w+\\]: \\[(?!AntiOpAbuse|CREATIVE)[A-Za-z0-9_\\-]+\\] (?!.*issued server command)"
+    );
+
+    // "Player moved too quickly", "Can't keep up", "Reached end of stream" etc
+    private static final Pattern SERVER_NOISE = Pattern.compile(
+        "(?i)(?:moved too quickly|moved wrongly|invalid move|reach distance|keep up|end of stream|read timed out|connection reset|com\\.mojang\\.authlib)"
+    );
+
     public static final Pattern IS_LOGGABLE = Pattern.compile(
         "(?i)(?:issued server command:|\\[CREATIVE\\])"
     );
@@ -50,6 +69,7 @@ public final class MessageFilter {
     public static boolean isAllowed(String line, boolean commandsOnly) {
         if (line == null || line.isBlank()) return false;
 
+        // Always block these regardless of mode
         if (IPV4.matcher(line).find())            return false;
         if (IPV6.matcher(line).find())            return false;
         if (PRIVATE_MSG_CMD.matcher(line).find()) return false;
@@ -57,11 +77,17 @@ public final class MessageFilter {
         if (AUTH_PLUGIN.matcher(line).find())     return false;
         if (AUTH_COMMANDS.matcher(line).find())   return false;
 
-        // commands-only: [CREATIVE] lines always pass, everything else must be a command
-        if (commandsOnly
-                && !IS_COMMAND.matcher(line).find()
-                && !line.contains("[CREATIVE]")) {
-            return false;
+        if (commandsOnly) {
+            // [CREATIVE] always passes
+            if (line.contains("[CREATIVE]"))      return true;
+
+            // Block chat, joins/leaves, server noise
+            if (PLAYER_CHAT.matcher(line).find())   return false;
+            if (JOIN_LEAVE.matcher(line).find())     return false;
+            if (SERVER_NOISE.matcher(line).find())   return false;
+            if (PLUGIN_SPAM.matcher(line).find())    return false;
+
+            // everything else passes — commands, console output, warnings, etc.
         }
 
         return true;

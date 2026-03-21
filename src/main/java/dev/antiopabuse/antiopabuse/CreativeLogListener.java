@@ -76,8 +76,7 @@ public final class CreativeLogListener implements Listener {
         String playerName = player.getName();
 
         String line = "[CREATIVE] " + playerName + " took " + amount + "x " + itemName;
-        logger.info(line); // this also gets caught by the console relay automatically
-        dispatcher.dispatch(line);
+        logger.info(line); // caught by RelayAppender which dispatches to Discord
     }
 
     private static String formatItemName(ItemStack item) {
